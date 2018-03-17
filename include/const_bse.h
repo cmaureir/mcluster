@@ -1,3 +1,5 @@
+#ifndef CONST_BSE_H
+#define CONST_BSE_H
 *
 * const_bse.h
 *
@@ -26,3 +28,4 @@
       REAL bcm(50000,34),bpp(80,10)
       COMMON /BINARY/ bcm,bpp
 *
+#endif
