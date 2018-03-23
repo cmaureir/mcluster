@@ -5,24 +5,21 @@
  *************/
 #include "main.h"
 
-int generate_m1(int *N, double **star, double mlow, double mup, double *M,
-    double *mmean, double MMAX, double Mcl, double epoch, double Z, double Rh,
-    int remnant);
+int generate_m1(struct options *opt, struct star_data star[], double *M,
+    double *mmean, double MMAX);
 
-int generate_m2(int an, double *mlim, double *alpha, double Mcl, double M_tmp,
-    double *subcount, int *N, double *mmean, double *M, double **star,
-    double MMAX, double epoch, double Z, double Rh, int remnant);
+int generate_m2(struct options *opt, struct star_data star[], double M_tmp,
+    double *subcount, double *mmean, double *M, double MMAX);
 
-int generate_m3(int *N, double **star, double mlow, double mup, double *M,
-    double *mmean, double MMAX, double Mcl);
+int generate_m3(struct options *opt, struct star_data star[], double *M,
+    double *mmean,  double MMAX);
 
 double subint(double min, double max, double alpha);
 
 double mlow(double mhigh, double alpha, double norma, double delta);
 
-int generate_m4(int *N, double **star, double alpha, double beta, double mu,
-    double mlow, double mup, double *M, double *mmean, double MMAX, double Mcl,
-    double epoch, double Z, double Rh, int remnant);
+int generate_m4(struct options *opt, struct star_data star[], double *mmean,
+    double MMAX, double *M);
 
 double alogam(double x, int *ifault);
 
@@ -30,10 +27,10 @@ double betain(double x, double p, double q, double beta, int *ifault);
 
 double r8_abs(double x);
 
-int generate_plummer(int N, double **star, double rtide, double rvir, double D,
+int generate_plummer(int N, struct star_data star[], double rtide, double rvir, double D,
     int symmetry);
 
-int generate_king(int N, double W0, double **star, double *rvir, double *rh,
+int generate_king(int N, double W0, struct star_data star[], double *rvir, double *rh,
     double *rking, double D, int symmetry);
 
 double densty(double z);
@@ -49,7 +46,7 @@ int rkqc(double *y,double *dydx, double *x, double *h, double den,
 int rk4(double x, double *y, double *dydx, double h, double *yout,
     double den);
 
-int generate_subr(int N, double S, double **star, double rtide, double rvir);
+int generate_subr(int N, double S, struct star_data star[], double rtide, double rvir);
 
 void quick(int start, int stop);
 
@@ -63,7 +60,7 @@ int cmpmy(double *x1, double *x2);
 
 int cmpmy_reverse(double *x1, double *x2);
 
-double generate_profile (int N, double **star, double Rmax, double Mtot,
+double generate_profile (int N, struct star_data star[], double Rmax, double Mtot,
     double *p, double *Rh, double D, int symmetry);
 
 double dfridr(double (*func)(double, double*), double x, double h, double *err,
@@ -100,11 +97,10 @@ double sigma(double r, double *p);
 
 double get_gauss(void);
 
-double fractalize(double D, int N, double **star, int radial, int symmetry);
+double fractalize(double D, int N, struct star_data star[], int radial, int symmetry);
 
-int get_binaries(int nbin, double **star, double M, double rvir, int pairing,
-    int *N, int adis, double amin, double amax, double Rh, int eigen, int BSE,
-    double epoch, double Z, int remnant, int OBperiods, double msort);
+int get_binaries(struct options opt, struct star_data star[], double M, double rvir,
+    int *N, double *Z);
 
 void shellsort(double **array, int N, int k);
 
@@ -114,78 +110,50 @@ void shellsort_1d(double *array, int N);
 
 void shellsort_reverse_1d(double *array, int N);
 
-int order(double **star, int N, double M, double msort, int pairing);
+int order(struct star_data star[], int N, double M, double msort, int pairing);
 
-int segregate(double **star, int N, double S);
+int segregate(struct star_data star[], int N, double S);
 
-int energy_order(double **star, int N, int Nstars);
+int energy_order(struct star_data star[], int N, int Nstars);
 
-int randomize(double **star, int N);
+int randomize(struct star_data star[], int N);
 
 double rtnewt (double ecc, double ma);
 
 int eigenevolution(double *m1, double *m2, double *ecc, double *abin);
 
-int radial_profile(double **star, int N, double rvir, double M,
+int radial_profile(struct star_data star[], int N, double rvir, double M,
     int create_radial_profile, int create_cumulative_profile, int code,
     int *NNBMAX, double *RS0, double *Rh2D, double *Rh3D, int NNBMAX_NBODY6);
 
-int cmd(double **star, int l, double Rgal, double *abvmag, double *vmag,
+int cmd(struct star_data star[], int l, double Rgal, double *abvmag, double *vmag,
     double *BV, double *Teff, double *dvmag, double *dBV);
 
-int output0(char *output, int N, int NNBMAX, double RS0, double dtadj,
-    double dtout, double tcrit, double rvir, double mmean, int tf,
-    int regupdate, int etaupdate, int mloss, int bin, int esc, double M,
-    double mlow, double mup, double MMAX, double epoch, double dtplot,
-    double Z, int nbin, double Q, double *RG, double *VG, double rtide,
-    int gpu, double **star, int sse, int seed, double extmass, double extrad,
-    double extdecay, double extstart);
+int output0(struct options opt, int N, int NNBMAX, double RS0, double rvir,
+    double mmean, int bin, double M, double MMAX,  double rtide,
+    star_data star[], int sse);
 
-int output1(char *output, int N, double dtadj, double dtout, double tcrit,
-    double rvir, double mmean, int tf, int regupdate, int etaupdate, int mloss,
-    int bin, int esc, double M, double mlow, double mup, double MMAX,
-    double epoch, double Z, int nbin, double Q, double *RG, double *VG,
-    double rtide, int gpu, double **star);
+int output1(struct options opt, double rvir, double mmean, int bin, double M, double MMAX,
+    double rtide, struct star_data star[]);
 
-int output2(char *output, int N, int NNBMAX, double RS0, double dtadj,
-    double dtout, double tcrit, double rvir, double mmean, int tf,
-    int regupdate, int etaupdate, int mloss, int bin, int esc, double M,
-    double mlow, double mup, double MMAX, double epoch, double dtplot,
-    double Z, int nbin, double Q, double *RG, double *VG, double rtide,
-    int gpu, double **star, int sse, int seed, double extmass, double extrad,
-    double extdecay, double extstart);
+int output2(struct options opt, int NNBMAX, double RS0,  double rvir, double mmean,
+    int bin, double M, double MMAX, double rtide, struct star_data star[], int sse);
 
-int output3(char *output, int N, double rvir, double rh, double mmean,
-    double M, double epoch, double Z, double *RG, double *VG, double rtide,
-    double **star, double Rgal, double extmass, double extrad);
+int output3(struct options opt, double rvir, double mmean, double M, double rtide,
+    struct star_data star[]);
 
-int output4(char *output, int N, int NNBMAX, double RS0, double dtadj,
-    double dtout, double tcrit, double rvir, double mmean, int tf,
-    int regupdate, int etaupdate, int mloss, int bin, int esc, double M,
-    double mlow, double mup, double MMAX, double epoch, double dtplot,
-    double Z, int nbin, double Q, double *RG, double *VG, double rtide,
-    int gpu, double **star, int sse, int seed, double extmass, double extrad,
-    double extdecay, double extstart);
+int output4(struct options opt, int NNBMAX, double RS0, double rvir, double mmean,
+    int bin, double M, double MMAX, double rtide, struct star_data star[], int sse);
 
 int output5(char *output, int N, int NNBMAX, double RS0, double dtadj,
     double dtout, double tcrit, double rvir, double mmean, int tf,
     int regupdate, int etaupdate, int mloss, int bin, int esc, double M,
     double mlow, double mup, double MMAX, double epoch, double dtplot,
     double Z, int nbin, double Q, double *RG, double *VG, double rtide,
-    int gpu, double **star, int sse, int seed, double extmass, double extrad,
+    int gpu, struct star_data star[], int sse, int seed, double extmass, double extrad,
     double extdecay, double extstart);
 
-void info(char *output, int N, double Mcl, int profile, double W0, double S,
-    double D, double Q, double Rh, double gamma[], double a, double Rmax,
-    double tcrit, int tf, double RG[], double VG[], int mfunc,
-    double single_mass, double mlow, double mup, double alpha[], double mlim[],
-    double alpha_L3, double beta_L3, double mu_L3, int weidner, int mloss,
-    int remnant, double epoch, double Z, int prantzos, int nbin, double fbin,
-    int pairing, double msort, int adis, double amin, double amax, int eigen,
-    int BSE, double extmass, double extrad, double extdecay, double extstart,
-    int code, int seed, double dtadj, double dtout, double dtplot, int gpu,
-    int regupdate, int etaupdate, int esc, int units, int match, int symmetry,
-    int OBperiods);
+void info(struct options opt);
 
 void help(double msort);
 #endif
