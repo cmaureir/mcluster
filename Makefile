@@ -5,7 +5,7 @@ FC = gfortran -O2 #-ffast-math
 
 INCPATH=include
 
-CC = gcc -O2 -fopenmp -Wall #-ffast-math
+CC = g++ -O2 -fopenmp -Wall #-ffast-math
 #use "-D NOOMP" and remove "-fopenmp" for compilation without OpenMP
 
 CFLAGS = -L/usr/lib/ -lgfortran
@@ -16,6 +16,8 @@ SDK_PATH=$(CUDA_PATH)/samples
 SOURCES := $(shell find . -type f -name '*.f')
 INCLUDES := $(shell find . -type f -name '*.h')
 OBJECTS := $(SOURCES:.f=.o)
+
+all: mcluster
 
 %.o:%.f
 	$(FC) -c $^ -o $@

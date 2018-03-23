@@ -110,7 +110,7 @@ struct{
 	double pts1;
 	double pts2;
 	double pts3;
-} points_;                                                                                                              
+} points_;
 
 struct{
 	double sigma;
@@ -153,11 +153,11 @@ double alogam(double x, int *ifault);
 double betain(double x, double p, double q, double beta, int *ifault);
 double r8_abs(double x);
 int generate_plummer(int N, double **star, double rtide, double rvir, double D, int symmetry);
-int generate_king(int N, double W0, double **star, double *rvir, double *rh, double *rking, double D, int symmetry); 
+int generate_king(int N, double W0, double **star, double *rvir, double *rh, double *rking, double D, int symmetry);
 double densty(double z);
-int odeint(double ystart0, double ystart1, double x1, double x2, double den, int *kount, double *xp, double **yp, int M, int KMAX);	 
+int odeint(double ystart0, double ystart1, double x1, double x2, double den, int *kount, double *xp, double **yp, int M, int KMAX);
 int derivs(double x, double *y, double *dydx, double den);
-int rkqc(double *y,double *dydx, double *x, double *h,double den, double *yscal, double *hdid, double *hnext, double TOL);	
+int rkqc(double *y,double *dydx, double *x, double *h,double den, double *yscal, double *hdid, double *hnext, double TOL);
 int rk4(double x, double *y, double *dydx, double h, double *yout, double den);
 int generate_subr(int N, double S, double **star, double rtide, double rvir);
 void quick(int start, int stop);
@@ -184,7 +184,7 @@ double get_gauss(void);
 double fractalize(double D, int N, double **star, int radial, int symmetry);
 int get_binaries(int nbin, double **star, double M, double rvir, int pairing, int *N, int adis, double amin, double amax, double Rh, int eigen, int BSE, double epoch, double Z, int remnant, int OBperiods, double msort);
 void shellsort_reverse_1d(double *array, int N);
-void shellsort_1d(double *array, int N);	
+void shellsort_1d(double *array, int N);
 void shellsort(double **array, int N, int k);
 void shellsort_reverse(double **array, int N, int k);
 int order(double **star, int N, double M, double msort, int pairing);
@@ -200,5 +200,12 @@ int output1(char *output, int N, double dtadj, double dtout, double tcrit, doubl
 int output2(char *output, int N, int NNBMAX, double RS0, double dtadj, double dtout, double tcrit, double rvir, double mmean, int tf, int regupdate, int etaupdate, int mloss, int bin, int esc, double M, double mlow, double mup, double MMAX, double epoch, double dtplot, double Z, int nbin, double Q, double *RG, double *VG, double rtide, int gpu, double **star, int sse, int seed, double extmass, double extrad, double extdecay, double extstart);
 int output3(char *output, int N, double rvir, double rh, double mmean, double M, double epoch, double Z, double *RG, double *VG, double rtide, double **star, double Rgal, double extmass, double extrad);
 int output4(char *output, int N, int NNBMAX, double RS0, double dtadj, double dtout, double tcrit, double rvir, double mmean, int tf, int regupdate, int etaupdate, int mloss, int bin, int esc, double M, double mlow, double mup, double MMAX, double epoch, double dtplot, double Z, int nbin, double Q, double *RG, double *VG, double rtide, int gpu, double **star, int sse, int seed, double extmass, double extrad, double extdecay, double extstart);
+int output5(char *output, int N, int NNBMAX, double RS0, double dtadj,
+    double dtout, double tcrit, double rvir, double mmean, int tf,
+    int regupdate, int etaupdate, int mloss, int bin, int esc, double M,
+    double mlow, double mup, double MMAX, double epoch, double dtplot,
+    double Z, int nbin, double Q, double *RG, double *VG, double rtide,
+    int gpu, double **star, int sse, int seed, double extmass, double extrad,
+    double extdecay, double extstart);
 void info(char *output, int N, double Mcl, int profile, double W0, double S, double D, double Q, double Rh, double gamma[], double a, double Rmax, double tcrit, int tf, double RG[], double VG[], int mfunc, double single_mass, double mlow, double mup, double alpha[], double mlim[], double alpha_L3, double beta_L3, double mu_L3, int weidner, int mloss, int remnant, double epoch, double Z, int prantzos, int nbin, double fbin, int pairing, double msort, int adis, double amin, double amax, int eigen, int BSE, double extmass, double extrad, double extdecay, double extstart, int code, int seed, double dtadj, double dtout, double dtplot, int gpu, int regupdate, int etaupdate, int esc, int units, int match, int symmetry, int OBperiods);
 void help(double msort);
