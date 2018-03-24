@@ -23,8 +23,8 @@ all: mcluster
 	$(FC) -c $^ -o $@
 
 mcluster_sse: $(OBJECTS)
-	$(CC) -c main.c -D SSE -lm
-	$(CC) $(OBJECTS) main.o -o mcluster_sse -lm $(CFLAGS)
+	$(CC) -D SSE -lm -c main.c
+	$(CC) -D SSE -lm $(CFLAGS) $(OBJECTS) main.o -o mcluster_sse
 
 mcluster_gpu: $(OBJECTS) $(INCPATH)/gpupot.gpu.o
 	$(CC) -c main.c -D SSE -D GPU -lm -I$(CUDA_PATH)/include
