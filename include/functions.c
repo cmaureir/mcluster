@@ -12,7 +12,7 @@ void evolv1_(int *kw, double *mass, double *mt, double *r, double *lum, double *
 void evolv2_(int *kw, double *mass, double *mt, double *r, double *lum, double *mc, double *rc, double *menv, double *renv, double *ospin, double *epoch, double *tms, double *tphys, double *tphysf, double *dtp, double *z, double *zpars, double *tb, double *ecc, double *vkick) {/*DUMMY*/};
 #endif
 
-int generate_m1(struct options *opt, struct star_data star[], double *M,
+int generate_m1(struct options *opt, vector<struct star_data> star, double *M,
     double *mmean, double MMAX) {
 
     //int ty;
@@ -127,7 +127,7 @@ int generate_m1(struct options *opt, struct star_data star[], double *M,
     }
 
     if (!opt->N) {
-        opt->N = max(floor((opt->Mcl-MMAX)/mth), 1);
+        opt->N = mmax(floor((opt->Mcl-MMAX)/mth), 1);
         if (!opt->epoch)
             printf("Estimated number of necessary stars: %i\n", opt->N);
         opt->N = 1;
@@ -146,7 +146,7 @@ int generate_m1(struct options *opt, struct star_data star[], double *M,
                 if (xx<k1/k2)
                     star[i].mass_epoch = pow(0.5*c1*xx*k2+pow(opt->mlow,c1),1.0/c1);
                 else
-                    star[i].mass_epoch = pow(c2*(xx*k2-k1)+pow(max(0.5,opt->mlow),c2),1.0/c2);
+                    star[i].mass_epoch = pow(c2*(xx*k2-k1)+pow(mmax(0.5,opt->mlow),c2),1.0/c2);
             } while (star[i].mass_epoch > MMAX);
 
             // evolve star for deltat = opt.epoch with SSE
@@ -205,7 +205,7 @@ int generate_m1(struct options *opt, struct star_data star[], double *M,
     return 0;
 }
 
-int generate_m2(struct options *opt, struct star_data star[], double M_tmp,
+int generate_m2(struct options *opt, vector<struct star_data> star, double M_tmp,
     double *subcount, double *mmean, double *M, double MMAX) {
 
     int i, j;
@@ -374,7 +374,7 @@ int generate_m2(struct options *opt, struct star_data star[], double M_tmp,
     return 0;
 }
 
-int generate_m3(struct options *opt, struct star_data star[], double *M,
+int generate_m3(struct options *opt, vector<struct star_data> star, double *M,
     double *mmean,  double MMAX) {
 
     int i;
@@ -469,7 +469,7 @@ double mlow(double mhigh, double alpha, double norma, double delta) {
         return pow(pow(mhigh, alpha) - delta * alpha / norma, 1. / alpha);
 }
 
-int generate_m4(struct options *opt, struct star_data star[], double *mmean,
+int generate_m4(struct options *opt, vector<struct star_data> star, double *mmean,
     double MMAX, double *M) {
 
     // L_3 IMF
@@ -601,7 +601,7 @@ int generate_m4(struct options *opt, struct star_data star[], double *mmean,
         printf("\nEvolving stellar population for %.1f Myr.\n",opt->epoch);
 
     if (!opt->N) {
-        opt->N = max(floor((opt->Mcl-opt->mup)/mth), 1);
+        opt->N = mmax(floor((opt->Mcl-opt->mup)/mth), 1);
         if (!opt->epoch)
             printf("Estimated number of necessary stars: %i\n", opt->N);
         opt->N = 1;
@@ -935,7 +935,7 @@ double r8_abs(double x) {
     return value;
 }
 
-int generate_plummer(int N, struct star_data star[], double rtide, double rvir, double D,
+int generate_plummer(int N, vector<struct star_data> star, double rtide, double rvir, double D,
     int symmetry){
 
     int i, h;
@@ -1024,7 +1024,7 @@ int generate_plummer(int N, struct star_data star[], double rtide, double rvir, 
     return 0;
 }
 
-int generate_king(int N, double W0, struct star_data star[], double *rvir, double *rh,
+int generate_king(int N, double W0, vector<struct star_data> star, double *rvir, double *rh,
     double *rking, double D, int symmetry) {
 
     // ODE variables
@@ -1505,7 +1505,7 @@ int rkqc(double *y,double *dydx, double *x, double *h, double den,
         errmax = 0.0;
         for (i=0;i<2;i++) {
             ytemp[i] = y[i] - ytemp[i];
-            errmax = max(errmax, sqrt(pow(ytemp[i]/yscal[i],2)));
+            errmax = mmax(errmax, sqrt(pow(ytemp[i]/yscal[i],2)));
         }
         errmax /= TOL;
         // if integration error is too large, decrease h
@@ -1570,7 +1570,7 @@ int rk4(double x, double *y, double *dydx, double h, double *yout,
     return 0;
 }
 
-int generate_subr(int N, double S, struct star_data star[], double rtide, double rvir) {
+int generate_subr(int N, double S, vector<struct star_data> star, double rtide, double rvir) {
 
     long   i, j;
     double r1, r2, tmp, rcut, rtemp;
@@ -1889,7 +1889,7 @@ int cmpmy_reverse(double *x1, double *x2) {
     return 1;
 }
 
-double generate_profile (int N, struct star_data star[], double Rmax, double Mtot,
+double generate_profile (int N, vector<struct star_data> star, double Rmax, double Mtot,
     double *p, double *Rh, double D, int symmetry) {
 
     double Mnorm;
@@ -2319,7 +2319,7 @@ double rho(double r, double *p) {
     }
 
     // no negative density!
-    return max(s * -1.0/PI, 0.0);
+    return mmax(s * -1.0/PI, 0.0);
 }
 
 double rho_kernel (double x, double *p) {
@@ -2385,7 +2385,7 @@ double get_gauss(void){
 
 }
 
-double fractalize(double D, int N, struct star_data star[], int radial, int symmetry) {
+double fractalize(double D, int N, vector<struct star_data> star, int radial, int symmetry) {
     int i=0, j, h, Nparent, Nparentlow;
     int Ntot = 128.0*pow(8,ceil(log(N)/log(8)));
     int Ntotorg = Ntot;
@@ -2651,7 +2651,7 @@ double fractalize(double D, int N, struct star_data star[], int radial, int symm
     return 0;
 }
 
-int get_binaries(struct options opt, struct star_data star[], double M, double rvir,
+int get_binaries(struct options opt, vector<struct star_data> star, double M, double rvir,
     int *N) {
 
     int i, j, k;
@@ -3101,7 +3101,7 @@ void shellsort_reverse_1d(double *array, int N) {
     }
 }
 
-int order(struct star_data star[], int N, double M, double msort, int pairing){
+int order(vector<struct star_data> star, int N, double M, double msort, int pairing){
 
     int i,j;
     int Nhighmass=0;
@@ -3375,7 +3375,7 @@ int order(struct star_data star[], int N, double M, double msort, int pairing){
     return 0;
 }
 
-int segregate(struct star_data star[], int N, double S){
+int segregate(vector<struct star_data> star, int N, double S){
     int i,j;
 
     int columns = 15;
@@ -3463,7 +3463,7 @@ int segregate(struct star_data star[], int N, double S){
     return 0;
 }
 
-int energy_order(struct star_data star[], int N, int Nstars){
+int energy_order(vector<struct star_data> star, int N, int Nstars){
     int i,j;
 
     int columns = 15;
@@ -3533,7 +3533,7 @@ int energy_order(struct star_data star[], int N, int Nstars){
     return 0;
 }
 
-int randomize(struct star_data star[], int N){
+int randomize(vector<struct star_data> star, int N){
     int i,j;
 
     int columns = 15;
@@ -3643,7 +3643,7 @@ int eigenevolution(double *m1, double *m2, double *ecc, double *abin){
         qnew = qold + (1.0-qold)*alpha;
     }
 
-    *m1 = max(*m1,*m2);
+    *m1 = mmax(*m1,*m2);
     *m2 = qnew * *m1;
 
     mtot = *m1 + *m2;
@@ -3657,7 +3657,7 @@ int eigenevolution(double *m1, double *m2, double *ecc, double *abin){
     return 0;
 }
 
-int radial_profile(struct star_data star[], struct options opt, double rvir,
+int radial_profile(vector<struct star_data> star, struct options opt, double rvir,
     double M, int create_radial_profile, int create_cumulative_profile,
     int *NNBMAX, double *RS0, double *Rh2D, double *Rh3D) {
 
@@ -3837,7 +3837,7 @@ int radial_profile(struct star_data star[], struct options opt, double rvir,
     return 0;
 }
 
-int cmd(struct star_data star[], int l, double Rgal, double *abvmag, double *vmag,
+int cmd(vector<struct star_data> star, int l, double Rgal, double *abvmag, double *vmag,
     double *BV, double *Teff, double *dvmag, double *dBV) {
 
     double lTeff, BC, kb;
@@ -4005,7 +4005,7 @@ int output0(struct options opt, int N, int NNBMAX, double RS0, double rvir,
 }
 
 int output1(struct options opt, double rvir, double mmean, int bin, double M, double MMAX,
-    double rtide, struct star_data star[]) {
+    double rtide, vector<struct star_data> star) {
 
     //Open output files
     char PARfile[50], NBODYfile[50];
@@ -4062,7 +4062,7 @@ int output1(struct options opt, double rvir, double mmean, int bin, double M, do
 }
 
 int output2(struct options opt, int NNBMAX, double RS0,  double rvir, double mmean,
-    int bin, double M, double MMAX, double rtide, struct star_data star[], int sse) {
+    int bin, double M, double MMAX, double rtide, vector<struct star_data> star, int sse) {
 
     //Open output files
     char PARfile[50], NBODYfile[50], SSEfile[50];
@@ -4150,7 +4150,7 @@ int output2(struct options opt, int NNBMAX, double RS0,  double rvir, double mme
 }
 
 int output3(struct options opt, double rvir, double mmean, double M, double rtide,
-    struct star_data star[]) {
+    vector<struct star_data> star) {
 
     //Open output files
     char tablefile[20];
@@ -4251,7 +4251,7 @@ int output3(struct options opt, double rvir, double mmean, double M, double rtid
 }
 
 int output4(struct options opt, int NNBMAX, double RS0, double rvir, double mmean,
-    int bin, double M, double MMAX, double rtide, struct star_data star[], int sse) {
+    int bin, double M, double MMAX, double rtide, vector<struct star_data> star, int sse) {
 
     //Open output files
     char PARfile[50], NBODYfile[50], SSEfile[50];
@@ -4336,7 +4336,7 @@ int output4(struct options opt, int NNBMAX, double RS0, double rvir, double mmea
 }
 
 int output5(struct options opt, int NNBMAX, double RS0, double rvir, double mmean,
-    int bin, double M, double MMAX,  double rtide, struct star_data star[], int sse) {
+    int bin, double M, double MMAX,  double rtide, vector<struct star_data> star, int sse) {
 
     //Open output files
     char PARfile[50], NBODYfile[50], SSEfile[50];

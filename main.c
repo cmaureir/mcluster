@@ -20,6 +20,7 @@
 
 #include "include/functions.h"
 
+using namespace std;
 
 int main (int argv, char **argc) {
 
@@ -104,7 +105,6 @@ int main (int argv, char **argc) {
     /*********
      * Start *
      *********/
-
     printf("\n-----START----         \n");
 
 #ifdef NOOMP
@@ -217,26 +217,17 @@ int main (int argv, char **argc) {
 
     int columns = 15;
 
-    struct star_data star[opt.NMAX];
-    for (j = 0; j < opt.NMAX; j++) {
-        star[j] = {0};
-    }
-
-
+    vector<struct star_data> star(opt.NMAX);
 
     /*******************************************
      * Evaluate Z from [Fe/H] if Z is set to 0 *
      *******************************************/
-
-     if (!opt.Z) {
+    if (!opt.Z) {
         // Bertelli, Bressan, Chiosi, Fagotto, Nasi, 1994, A&AS, 106, 275
         opt.Z = pow(10.0, 0.977*opt.FeH)*opt.Zsun;
         printf("\nUsing Bertelli et al. (1994) relation to convert FeH = %.3f"
-            " into Z = %.3f\n", opt.FeH, opt.Z);
+           " into Z = %.3f\n", opt.FeH, opt.Z);
     }
-
-
-
     /**********************************
      * Calculate maximum stellar mass *
      **********************************/
@@ -494,8 +485,8 @@ int main (int argv, char **argc) {
             star[2*j+1].lstar = 0.0;
         }
 
-//        order(star, Nstars, M, 0.0, 0);
-//        randomize(star, opt.N);
+        order(star, Nstars, M, 0.0, 0);
+        randomize(star, opt.N);
     }
 
 
@@ -530,7 +521,7 @@ int main (int argv, char **argc) {
     // sort masses when mass segregation parameter > 0
     if ((opt.S) && !(opt.profile == 2)) {
         printf("\nApplying mass segregation with S = %f\n",opt.S);
-//        segregate(star, opt.N, opt.S);
+        segregate(star, opt.N, opt.S);
 
         //calculate cumulative mass function Mcum
         for (i=0;i<opt.N;i++) {
@@ -583,14 +574,14 @@ int main (int argv, char **argc) {
     if (opt.profile == 1) {
         printf("\nGenerating King model with parameters: "
             "N = %i\t W0 = %g\t Rh = %.3f\t D = %.2f\n",opt.N, opt.W0, opt.Rh, opt.D);
-//        generate_king(opt.N, opt.W0, star, &rvirtemp, &rhtemp, &rking, opt.D, opt.symmetry);
+        generate_king(opt.N, opt.W0, star, &rvirtemp, &rhtemp, &rking, opt.D, opt.symmetry);
     } else if (opt.profile == 2) {
         opt.N = Nunseg;
         printf("\nGenerating segregated Subr model with parameters: "
             "N = %i\t S = %g\t Rh = %.3f\n",opt.N, opt.S, opt.Rh);
         // value provided by L. Subr
         rvir = opt.Rh/0.76857063065978;
-//        generate_subr(opt.N, opt.S, star, rtide, rvir);
+        generate_subr(opt.N, opt.S, star, rtide, rvir);
         printf ("\nrvir = %.5f\t rh = %.5f\t rtide = %.5f (pc)\n",
             rvir, opt.Rh, rtide);
     } else if (opt.profile == 3) {
@@ -619,19 +610,19 @@ int main (int argv, char **argc) {
         //transition parameter (2.0 for EFF template)
         p[5] = opt.gamma[2];
 
-//        generate_profile(opt.N, star, opt.Rmax, M, p, &opt.Rh, opt.D, opt.symmetry);
+        generate_profile(opt.N, star, opt.Rmax, M, p, &opt.Rh, opt.D, opt.symmetry);
         printf("\nRh = %.1f pc\n", opt.Rh);
     } else if (opt.profile == -1) {
         printf("\nGenerating fractal distribution with parameters: "
             "N = %i\t Rh = %.3f\t D = %.2f\n", opt.N, opt.Rh, opt.D);
-//        fractalize(opt.D, opt.N, star, 0, opt.symmetry);
+        fractalize(opt.D, opt.N, star, 0, opt.symmetry);
         rvir = opt.Rh;
     } else {
         printf("\nGenerating Plummer model with parameters: "
             "N = %i\t Rh = %.3f\t D = %.2f\n", opt.N, opt.Rh, opt.D);
         rvir = opt.Rh/0.772764;
         rplummer = opt.Rh/1.305;
-//        generate_plummer(opt.N, star, rtide, rvir, opt.D, opt.symmetry);
+        generate_plummer(opt.N, star, rtide, rvir, opt.D, opt.symmetry);
     }
 
     // Apply Baumgardt et al. (2008) mass segregation
@@ -662,7 +653,7 @@ int main (int argv, char **argc) {
         }
 
         printf("\nOrdering orbits by energy.\n");
-//        energy_order(star, opt.N, Nstars);
+        energy_order(star, opt.N, Nstars);
 
         int nlow, nhigh, nrandom;
         for (i=0;i<Nunseg;i++) {
@@ -795,8 +786,8 @@ int main (int argv, char **argc) {
             "%lf\n\n", ke);
 
         // make half-mass radius of the system match the desired one
-//        radial_profile(star, opt, rvir, M, 0, 0, &NNBMAX, &RS0, &Rh2D,
-//            &Rh3D);
+        radial_profile(star, opt, rvir, M, 0, 0, &NNBMAX, &RS0, &Rh2D,
+            &Rh3D);
 
         if (opt.match) {
             printf("\nmeasuring half-mass radius: %.7f \t %.7f (should/is)\n"
@@ -872,8 +863,8 @@ int main (int argv, char **argc) {
             "%lf\n\n",ke);
 
         // make half-mass radius of the system match the desired one
-//        radial_profile(star, opt.N, rvir, M, 0, 0, opt.code, &NNBMAX, &RS0, &Rh2D,
-//            &Rh3D, opt.NNBMAX_NBODY6);
+        radial_profile(star, opt, rvir, M, 0, 0, opt.code, &NNBMAX, &RS0, &Rh2D,
+            &Rh3D, opt.NNBMAX_NBODY6);
 
         if (opt.match) {
             printf("\nmeasuring half-mass radius: %.7f \t %.7f (should/is)\n"
@@ -916,9 +907,9 @@ int main (int argv, char **argc) {
 
     // Calculate radial density profile, estimate NNBMAX and RS0
     // (important for Nbody6 only)
-//    radial_profile(star, opt.N, rvir, M, opt.create_radial_profile,
-//        opt.create_cumulative_profile, opt.code, &NNBMAX, &RS0, &Rh2D, &Rh3D,
-//        opt.NNBMAX_NBODY6);
+    radial_profile(star, opt.N, rvir, M, opt.create_radial_profile,
+        opt.create_cumulative_profile, opt.code, &NNBMAX, &RS0, &Rh2D, &Rh3D,
+        opt.NNBMAX_NBODY6);
     printf("\nActual half-mass radius of the cluster ="
         "(%.4f / %.4f) pc (3D / 2D)\n", Rh3D, Rh2D);
 
@@ -975,7 +966,7 @@ int main (int argv, char **argc) {
             star_index[j][1] = j;
         }
 
-//        shellsort(star_index,opt.N,2);
+        shellsort(star_index,opt.N,2);
 
         for (j=0;j<opt.nbin;j++) {
             int mbin_itmp = mbin_index[j][1];
@@ -1057,7 +1048,7 @@ int main (int argv, char **argc) {
         if (opt.seed)
             srand48(opt.seed);
 
-//        get_binaries(opt, star, M, rvir, &opt.N);
+        get_binaries(opt, star, M, rvir, &opt.N);
     }
 
     // Specify KZ(22) & the sse parameter
@@ -1134,22 +1125,22 @@ int main (int argv, char **argc) {
     printf("\n\n-----OUTPUT-----      \n");
 
     if (opt.code == 0) {
-//        output0(opt, NNBMAX, RS0, rvir, mmean, bin, M, MMAX, rtide, star, sse);
+        output0(opt, NNBMAX, RS0, rvir, mmean, bin, M, MMAX, rtide, star, sse);
     }
     else if (opt.code == 1) {
-//        output1(opt, rvir, mmean, bin, M, MMAX, rtide, star);
+        output1(opt, rvir, mmean, bin, M, MMAX, rtide, star);
     }
     else if (opt.code == 2) {
-//        output2(opt, NNBMAX, RS0, rvir, mmean, bin, M, MMAX, rtide, star, sse);
+        output2(opt, NNBMAX, RS0, rvir, mmean, bin, M, MMAX, rtide, star, sse);
     }
     else if (opt.code == 3) {
-//        output3(opt, rvir, mmean, M, rtide, star);
+        output3(opt, rvir, mmean, M, rtide, star);
     }
     else if (opt.code == 4) {
-//        output4(opt, NNBMAX, RS0, rvir, mmean, bin, M, MMAX, rtide, star, sse);
+        output4(opt, NNBMAX, RS0, rvir, mmean, bin, M, MMAX, rtide, star, sse);
     }
     else if (opt.code == 5) {
-//        output5(opt, NNBMAX, RS0, rvir, mmean, bin, M, MMAX,  rtide, star, sse);
+        output5(opt, NNBMAX, RS0, rvir, mmean, bin, M, MMAX,  rtide, star, sse);
     }
 
     /**********************

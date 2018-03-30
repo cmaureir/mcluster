@@ -9,6 +9,9 @@
 #include<sys/stat.h>
 #include<getopt.h>
 
+#include <iostream>
+#include <vector>
+
 #ifdef GPU
 #include <cuda.h>
 #include <cuda_runtime.h>
@@ -30,8 +33,8 @@
 #define RSUN    6.96265E5       /* Solar radius in km */
 
 //Functions
-#define max(a,b)         (a < b) ?  (b) : (a)
-#define min(a,b)         (a < b) ?  (a) : (b)
+#define mmax(a,b)         (a < b) ?  (b) : (a)
+#define mmin(a,b)         (a < b) ?  (a) : (b)
 #define Lifetime(Mstar)  1.13E4*pow(Mstar,-3)+0.6E2*pow(Mstar,-0.75)+1.2 //Myr    [Prantzos 2007]
 
 
@@ -239,8 +242,12 @@ struct coord {
 //      star[][14] = Zstar, metallicity of star                            *
 struct star_data {
     double mass_epoch;
-    double rx, ry, rz;
-    double vx, vy, vz;
+    double rx;
+    double ry;
+    double rz;
+    double vx;
+    double vy;
+    double vz;
     double mass;
     double kstar;
     double epoch1;
@@ -249,6 +256,23 @@ struct star_data {
     double lstar;
     double epochstar;
     double zstar;
+    star_data () {
+        mass_epoch = 0.0;
+        rx = 0.0;
+        ry = 0.0;
+        rz = 0.0;
+        vx = 0.0;
+        vy = 0.0;
+        vz = 0.0;
+        mass = 0.0;
+        kstar = 0.0;
+        epoch1 = 0.0;
+        ospin = 0.0;
+        rstar = 0.0;
+        lstar = 0.0;
+        epochstar = 0.0;
+        zstar = 0.0;
+    }
     struct star_data& operator=(const star_data& other) {
         mass_epoch = other.mass_epoch;
         rx = other.rx;
@@ -271,12 +295,11 @@ struct star_data {
 
 struct options {
     // Basic physical parameters
-
     // Number of stars, Mcl will be set to 0 if specified!
-    int N = 0;
+    int N;
     // Total mass of the cluster, only used when N is set to 0, necessary for
     // usage of maximum stellar mass relation of Weidner & Kroupa (2006)
-    double Mcl = 1000.0;
+    double Mcl;
     // Density profile;
     // =0 Plummer model,
     // =1 King model (based on king0.f by D.C. Heggie),
@@ -284,25 +307,25 @@ struct options {
     // =3 2-dimensional EFF template (Elson, Fall & Freeman 1987) or
     // Nuker template (Lauer et al. 1995),
     // =-1 no density gradient
-    int profile = 0;
+    int profile;
     // King's W0 paramter [0.3-12.0]
-    double W0 = 5.0;
+    double W0;
     // Fraction of mass segregation for profile; =0.0 unsegregated,
     // =1.0 completely segregated (take maximally S=0.99 for profile=2)
-    double S = 0.0;
+    double S;
     // Fractal dimension; =3.0 unfractal, =2.6 2/8 fractal, =2.0 4/8 fractal,
     // =1.6 6/8 fractal, (2^D children per parent, following Goodwin &
     // Whitworth 2004)
-    double D = 3.0;
+    double D;
     // Initial virial ratio; =0.5 virial equilibrium, <0.5 collapsing,
     // >0.5 expanding
-    double Q = 0.5;
+    double Q;
     // Half-mass radius [pc], ignored if profile = 3, set =-1 for using Marks
     // & Kroupa (2012) Mcl-Rh relation
-    double Rh = 0.8;
+    double Rh;
     // Power-law slopes of EFF/Nuker templates (outer slope, inner slope,
     // transition); set gamma[1] = 0.0 and gamma[2] = 2.0 for EFF (profile = 3)
-    double gamma[3] = {2.0, 0.0, 2.0};
+    double gamma[3];
     // Scale radius of EFF/Nuker template (profile = 3) [pc]
     double a = 1.0;
     // Cut-off radius for EFF/Nuker template (profile = 3) [pc]
@@ -421,17 +444,6 @@ struct options {
     int BSE = 0;
 #endif
 
-    // Gas parameters (only used for Nbody6 input)
-
-    // external Plummer (gas) sphere mass [Msun]
-    double extmass = 0.0;
-    // external Plummer (gas) sphere scale factor [pc]
-    double extrad = 0.0;
-    // decay time for gas expulsion (set 0 for no decay) [Myr]
-    double extdecay = 0.0;
-    // delay time for start of gas expulsion [Myr]
-    double extstart = 0.0;
-
     // Code parameters
 
     // Nbody version:
@@ -447,15 +459,6 @@ struct options {
     unsigned int seed = 0;
     // Name of output files
     char const *output = "test";
-    // DTADJ [N-body units (Myr in Nbody6 custom)], energy-check time step
-    double dtadj = 1.0;
-    // DELTAT [N-body units (Myr in Nbody6 custom)],
-    // output interval, must be multiple of DTADJ
-    double dtout = 1.0;
-    // DTPLOT [N-body units (Myr in Nbody6 custom)],
-    // output of HRdiagnostics, should be multiple of DTOUT,
-    // set to zero if output not desired
-    double dtplot = 1.0;
     // Use of GPU,
     // 0= off,
     // 1= on
@@ -500,17 +503,6 @@ struct options {
     // =0 off,
     // =1 on
     int create_cumulative_profile = 1;
-    // Distance of cluster from sun for artificial CMD with
-    // observational errors [pc]
-    double Rgal = 10000.0;
-    // Solar metallicity
-    double Zsun = 0.02;
-    // Maximum number of stars & orbits allowed in McLuster
-    int NMAX = 1500000;
-    // Maximum number of neighbours allowed in NBODY6
-    int NNBMAX_NBODY6 = 500;
-    // Maximum stellar mass allowed in McLuster [Msun]
-    double upper_IMF_limit = 150.0;
     // Counter for number of alpha slopes for mfunc = 2
     int an = 0;
     // Counter for number of mass limits for mfunc = 1, 2 & 4
@@ -523,9 +515,38 @@ struct options {
     int xx = 0;
     // Counter for EFF/Nuker profile parameters
     int gn = 0;
+    // Maximum number of stars & orbits allowed in McLuster
+    int NMAX = 1500000;
+    // Maximum number of neighbours allowed in NBODY6
+    int NNBMAX_NBODY6 = 500;
+    // Distance of cluster from sun for artificial CMD with
+    // observational errors [pc]
+    double Rgal = 10000.0;
+    // Solar metallicity
+    double Zsun = 0.02;
+    // Maximum stellar mass allowed in McLuster [Msun]
+    double upper_IMF_limit = 150.0;
     // Input array for external potential parameters
     double extgas[4];
+    // DTADJ [N-body units (Myr in Nbody6 custom)], energy-check time step
+    double dtadj = 1.0;
+    // DELTAT [N-body units (Myr in Nbody6 custom)],
+    // output interval, must be multiple of DTADJ
+    double dtout = 1.0;
+    // DTPLOT [N-body units (Myr in Nbody6 custom)],
+    // output of HRdiagnostics, should be multiple of DTOUT,
+    // set to zero if output not desired
+    double dtplot = 1.0;
+    // Gas parameters (only used for Nbody6 input)
 
+    // external Plummer (gas) sphere mass [Msun]
+    double extmass = 0.0;
+    // external Plummer (gas) sphere scale factor [pc]
+    double extrad = 0.0;
+    // decay time for gas expulsion (set 0 for no decay) [Myr]
+    double extdecay = 0.0;
+    // delay time for start of gas expulsion [Myr]
+    double extstart = 0.0;
 };
 
 #endif
